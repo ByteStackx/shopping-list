@@ -1,5 +1,5 @@
 import { IncomingMessage, ServerResponse } from 'http';
-import { addItem, getAllItems, getItemById } from '../controller/itemController';
+import { addItem, getAllItems, getItemById, updateItem } from '../controller/itemController';
 
 export const itemRoute = async (req: IncomingMessage, res: ServerResponse) => {
     if (req.url?.startsWith('/items')) {
@@ -67,7 +67,40 @@ export const itemRoute = async (req: IncomingMessage, res: ServerResponse) => {
                     return;
                 }
             });
+            return;
+        }
 
+        // PUT /items/:id
+        if (req.method === 'PUT' && id) {
+            if (isNaN(id)) {
+                res.writeHead(400, { 'Content-Type': 'application/json'});
+                res.end(JSON.stringify({ error: 'Invalid ID'}));
+                return;
+            }
+
+            let body = ''
+            req.on('data', (chunk) => {
+                body += chunk.toString();
+            });
+
+            req.on('end', () => {
+                try {
+                    const updates = JSON.parse(body);
+                    const updatedItem = updateItem(id, updates);
+
+                    if(!updatedItem) {
+                        res.writeHead(404, { 'Content-Type': 'application/json'});
+                        res.end(JSON.stringify ({ error: 'Item not found'}));
+                        return;
+                    }
+
+                    res.writeHead(200, { 'Content-Type': 'application/json'});
+                    res.end(JSON.stringify(updatedItem))
+                } catch (err) {
+                    res.writeHead(404, { 'Content-Type': 'application/json'});
+                    res.end(JSON.stringify ({ error: 'Invalid JSON'}));
+                }
+            });
             return;
         }
 
