@@ -85,19 +85,33 @@ export const itemRoute = async (req: IncomingMessage, res: ServerResponse) => {
 
             req.on('end', () => {
                 try {
-                    const updates = JSON.parse(body);
-                    const updatedItem = updateItem(id, updates);
+                    const { name, purchased, quantity, size } = JSON.parse(body)
+                    const errors: string[] = [];
 
-                    if(!updatedItem) {
-                        res.writeHead(404, { 'Content-Type': 'application/json'});
-                        res.end(JSON.stringify ({ error: 'Item not found'}));
+                    if (name !== undefined && typeof name !== "string") errors.push("Name must be a string");
+                    if (purchased !== undefined && typeof purchased !== "boolean") errors.push("Purchased must be a boolean");
+                    if (quantity !== undefined && typeof quantity !== "number") errors.push("Quantity must be a number");
+                    if (size !== undefined && typeof size !== "string") errors.push("Size must be a string");
+
+                    if (errors.length > 0) {
+                        res.writeHead(400, { "Content-Type": "application/json"});
+                        res.end(JSON.stringify({errors}));
+                        return
+                    }
+
+                    const updatedItem = updateItem(id, {name, purchased, quantity, size});
+
+                    if (!updatedItem) {
+                        res.writeHead(404, { "Content-Type": "application/json"});
+                        res.end(JSON.stringify({ error: "Item not found"}));
                         return;
                     }
 
-                    res.writeHead(200, { 'Content-Type': 'application/json'});
-                    res.end(JSON.stringify(updatedItem))
+                    res.writeHead(200, { "Content-Type": "application/json"});
+                    res.end(JSON.stringify(updatedItem));
+                    
                 } catch (err) {
-                    res.writeHead(404, { 'Content-Type': 'application/json'});
+                    res.writeHead(400, { 'Content-Type': 'application/json'});
                     res.end(JSON.stringify ({ error: 'Invalid JSON'}));
                 }
             });
