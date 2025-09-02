@@ -28,3 +28,14 @@ export const getItemById = (id: number): Item | undefined => {
     const item = items.find(item => item.id === id);
     return item;
 }
+
+export const updateItem = (id: number, updates: Partial<Item>): Item | undefined => {
+    const index = items.findIndex(item => item.id === id)
+
+    if (index === -1) {
+        return undefined;
+    }
+
+    items[index] = { ...items[index], ...updates};
+    return items[index];
+};
