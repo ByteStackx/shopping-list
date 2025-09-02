@@ -39,3 +39,12 @@ export const updateItem = (id: number, updates: Partial<Item>): Item | undefined
     items[index] = { ...items[index], ...updates};
     return items[index];
 };
+
+export const deleteItem = (id: number): boolean => {
+    const index = items.findIndex(item => item.id === id);
+    if (index === -1) {
+        return false;
+    }
+    items.splice(index, 1);
+    return true;
+};

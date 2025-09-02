@@ -1,5 +1,5 @@
 import { IncomingMessage, ServerResponse } from 'http';
-import { addItem, getAllItems, getItemById, updateItem } from '../controller/itemController';
+import { addItem, deleteItem, getAllItems, getItemById, updateItem } from '../controller/itemController';
 
 export const itemRoute = async (req: IncomingMessage, res: ServerResponse) => {
     if (req.url?.startsWith('/items')) {
@@ -115,6 +115,26 @@ export const itemRoute = async (req: IncomingMessage, res: ServerResponse) => {
                     res.end(JSON.stringify ({ error: 'Invalid JSON'}));
                 }
             });
+            return;
+        }
+
+        // DELETE /items/:id
+        if (req.method === 'DELETE' && id) {
+            if (isNaN(id)) {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Invalid ID' }));
+                return;
+            }
+
+            const deleted = deleteItem(id);
+            if (!deleted) {
+                res.writeHead(404, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Item not found' }));
+                return;
+            }
+
+            res.writeHead(204);
+            res.end();
             return;
         }
 
